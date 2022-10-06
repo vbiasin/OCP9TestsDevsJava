@@ -1,20 +1,18 @@
 package com.dummy.myerp.business.impl.manager;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
+import com.dummy.myerp.model.bean.comptabilite.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.TransactionStatus;
 import com.dummy.myerp.business.contrat.manager.ComptabiliteManager;
 import com.dummy.myerp.business.impl.AbstractBusinessManager;
-import com.dummy.myerp.model.bean.comptabilite.CompteComptable;
-import com.dummy.myerp.model.bean.comptabilite.EcritureComptable;
-import com.dummy.myerp.model.bean.comptabilite.JournalComptable;
-import com.dummy.myerp.model.bean.comptabilite.LigneEcritureComptable;
 import com.dummy.myerp.technical.exception.FunctionalException;
 import com.dummy.myerp.technical.exception.NotFoundException;
 
@@ -60,7 +58,7 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
      */
     // TODO à tester
     @Override
-    public synchronized void addReference(EcritureComptable pEcritureComptable) {
+    public synchronized void addReference(EcritureComptable pEcritureComptable) throws NotFoundException {
         // TODO à implémenter
         // Bien se réferer à la JavaDoc de cette méthode !
         /* Le principe :
@@ -73,7 +71,29 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
                 3.  Mettre à jour la référence de l'écriture avec la référence calculée (RG_Compta_5)
                 4.  Enregistrer (insert/update) la valeur de la séquence en persitance
                     (table sequence_ecriture_comptable)
+
+                    Journal BQ 2022 BQ-2022/0001 AC-2022/00001
          */
+        ZoneId zone = ZoneId.of("Europe/Paris");
+        int annee = pEcritureComptable.getDate().toInstant().atZone(zone).getYear();
+        SequenceEcritureComptable sequence = getDaoProxy().getComptabiliteDao().getSequenceEcritureComptable(pEcritureComptable.getJournal().getCode(),annee);
+        if(sequence==null){
+            sequence.setCodeJournal(pEcritureComptable.getJournal().getCode());
+            sequence.setAnnee(annee);
+            sequence.setDerniereValeur(1);
+            getDaoProxy().getComptabiliteDao().insertSequenceEcritureComptable(sequence);
+        }else{
+            sequence.setDerniereValeur(sequence.getDerniereValeur()+1);
+        }
+        String valeur = sequence.getDerniereValeur().toString();
+        while(valeur.length()!=5){
+            valeur = "0"+valeur;
+        }
+        String reference = pEcritureComptable.getJournal().getCode()+"-"+annee+"/"+valeur;
+        pEcritureComptable.setReference(reference);
+        getDaoProxy().getComptabiliteDao().updateSequenceEcritureComptable(sequence);
+        getDaoProxy().getComptabiliteDao().updateEcritureComptable(pEcritureComptable);
+
     }
 
     /**
@@ -131,9 +151,15 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
             throw new FunctionalException(
                 "L'écriture comptable doit avoir au moins deux lignes : une ligne au débit et une ligne au crédit.");
         }
-
+        // RG4 est validée par le montant crédit et débit en type Big Decimal (type signé)
         // TODO ===== RG_Compta_5 : Format et contenu de la référence
         // vérifier que l'année dans la référence correspond bien à la date de l'écriture, idem pour le code journal...
+        ZoneId zone = ZoneId.of("Europe/Paris");
+        int annee = pEcritureComptable.getDate().toInstant().atZone(zone).getYear();
+        String semiRefAttendu = pEcritureComptable.getJournal().getCode()+"-"+annee+"/";
+        if(!pEcritureComptable.getReference().contains(semiRefAttendu))  throw new FunctionalException(
+                "Mauvais format Ecriture comptable.");
+
     }
 
 
@@ -144,7 +170,7 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
      * @param pEcritureComptable -
      * @throws FunctionalException Si l'Ecriture comptable ne respecte pas les règles de gestion
      */
-    protected void checkEcritureComptableContext(EcritureComptable pEcritureComptable) throws FunctionalException {
+    protected void checkEcritureComptableContext(EcritureComptable pEcritureComptable) throws FunctionalException { //REG 6+7
         // ===== RG_Compta_6 : La référence d'une écriture comptable doit être unique
         if (StringUtils.isNoneEmpty(pEcritureComptable.getReference())) {
             try {
