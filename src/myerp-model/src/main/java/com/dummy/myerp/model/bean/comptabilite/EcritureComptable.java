@@ -75,6 +75,9 @@ public class EcritureComptable {
         return listLigneEcriture;
     }
 
+
+    // ==================== Méthodes ====================
+
     /**
      * Calcul et renvoie le total des montants au débit des lignes d'écriture
      *
@@ -115,7 +118,7 @@ public class EcritureComptable {
         return vRetour;
     }
 
-    // ==================== Méthodes ====================
+
     @Override
     public String toString() {
         final StringBuilder vStB = new StringBuilder(this.getClass().getSimpleName());
