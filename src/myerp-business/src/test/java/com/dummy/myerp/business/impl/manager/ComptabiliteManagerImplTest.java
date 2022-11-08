@@ -1,7 +1,10 @@
 package com.dummy.myerp.business.impl.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+
+import com.dummy.myerp.consumer.dao.contrat.DaoProxy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,10 +17,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.dummy.myerp.consumer.ConsumerHelper.getDaoProxy;
+import static org.mockito.Mockito.when;
+
 
 @ExtendWith(MockitoExtension.class)
 public class ComptabiliteManagerImplTest {
 
+    @Mock
+    DaoProxy dao;
 
 
     private ComptabiliteManagerImpl manager= new ComptabiliteManagerImpl();
@@ -218,6 +226,8 @@ public class ComptabiliteManagerImplTest {
     @Test
     public void checkEcritureComptableContext() throws Exception {
         ComptabiliteManagerImpl manager2 = new ComptabiliteManagerImpl();
+
+
         EcritureComptable ecritureExistante = new EcritureComptable();
         ecritureExistante.setId(2);
         ecritureExistante.setJournal(new JournalComptable("BC", "Banque"));
@@ -250,6 +260,12 @@ public class ComptabiliteManagerImplTest {
 
         // THEN
         verify(calculator, times(1)).divide(1, 0);*/
+
+
+        when(getDaoProxy().getComptabiliteDao().getListCompteComptable()).thenReturn(new ArrayList<CompteComptable>());
+        when(getDaoProxy().getComptabiliteDao().getListJournalComptable()).thenReturn(new ArrayList<JournalComptable>());
+        when(getDaoProxy().getComptabiliteDao().getListEcritureComptable()).thenReturn(new ArrayList<EcritureComptable>());
+
         manager2.addReference(ecritureExistante);
         manager2.checkEcritureComptableContext(ecriture);
 
