@@ -191,7 +191,6 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
             EcritureComptable vECRef;
             try {
                 // Recherche d'une écriture ayant la même référence
-                System.out.println(pEcritureComptable.getReference());
                 vECRef= getDaoProxy().getComptabiliteDao().getEcritureComptableByRef(pEcritureComptable.getReference());
                 // Si l'écriture à vérifier est une nouvelle écriture (id == null),
                 // ou si elle ne correspond pas à l'écriture trouvée (id != idECRef),
