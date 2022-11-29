@@ -81,10 +81,12 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
         int annee = pEcritureComptable.getDate().toInstant().atZone(zone).getYear();
         SequenceEcritureComptable sequence = getDaoProxy().getComptabiliteDao().getSequenceEcritureComptable(pEcritureComptable.getJournal().getCode(),annee);
         if(sequence==null){
+            sequence = new SequenceEcritureComptable();
             sequence.setCodeJournal(pEcritureComptable.getJournal().getCode());
             sequence.setAnnee(annee);
             sequence.setDerniereValeur(1);
             getDaoProxy().getComptabiliteDao().insertSequenceEcritureComptable(sequence);
+
         }else{
             sequence.setDerniereValeur(sequence.getDerniereValeur()+1);
             getDaoProxy().getComptabiliteDao().insertSequenceEcritureComptable(sequence);
@@ -106,7 +108,6 @@ public class ComptabiliteManagerImpl extends AbstractBusinessManager implements 
     // TODO à tester
     @Override
     public void checkEcritureComptable(EcritureComptable pEcritureComptable) throws FunctionalException {
-        //this.checkEcritureComptableUnitViolation(pEcritureComptable);
         this.checkEcritureComptableUnitRG2(pEcritureComptable);
         this.checkEcritureComptableUnitRG3(pEcritureComptable);
         this.checkEcritureComptableUnitRG5(pEcritureComptable);
