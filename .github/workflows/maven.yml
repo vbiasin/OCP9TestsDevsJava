@@ -28,4 +28,5 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Run the Maven verify phase
-      run: mvn clean install
+      run: mvn -f OCP9TestsDevsJava/src/pom.xml clean install
+      
