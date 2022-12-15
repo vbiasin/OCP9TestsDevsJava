@@ -28,5 +28,5 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Run the Maven verify phase
-      run: cd D:\a\OCP9TestsDevsJava\OCP9TestsDevsJava\src && ls && pwd && mvn clean && mvn install
+      run: cd D:\a\OCP9TestsDevsJava\OCP9TestsDevsJava\src && ls && pwd && mvn clean test
       
